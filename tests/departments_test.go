@@ -54,7 +54,7 @@ func TestDeleteDepartmentById(t *testing.T) {
 
 	foo := &dbex.Department{}
 	err = conn.DB.Where("Description = ?", "test").Last(foo).Error
-	if foo == nil && err == nil {
+	if foo.Id == 0 && err == nil {
 		_ = conn.DB.Create(&dbex.Department{Description: "test"})
 		_ = conn.DB.Where("Description = ?", "test").Last(foo)
 	} else if err != nil {
@@ -110,6 +110,40 @@ func TestSelectDepartmentsAll(t *testing.T) {
 		t.Error("\nFAILED: returned empty slice at SelectAll")
 	} else {
 		t.Log("\nPASSED: returned at SelectAll:\n", foo)
+	}
+
+}
+
+func TestSelectDepartmentById(t *testing.T) {
+	dataItems := []TestDataItemStatuses{
+		{0, nil, true},
+		{1, nil, false},
+	}
+
+	conn, err := GetConf()
+	if err != nil {
+		t.Error("DB connection error: ", err)
+		return
+	}
+
+	for _, item := range dataItems {
+		foo, err := conn.SelectDepartmentById(item.inputId)
+
+		if item.isBroken {
+			if err == nil {
+				t.Error("\nFAILED: expected an error, but no error catched at Select by id ", item.inputId)
+			} else {
+				t.Log("\nPASSED: expected an error, got an error at Select by id ", foo, "\nerror: ", err)
+			}
+		} else {
+			if err != nil {
+				t.Error("\nFAILED: non-expected error at Select by id ", item.inputId, "\nerror: ", err)
+			} else if foo.Id != 0 {
+				t.Log("\nPASSED: no error at Select by id ", foo)
+			} else {
+				t.Error("\nFAILED: no error, but relust is nil at Select by id ", item.inputId)
+			}
+		}
 	}
 
 }

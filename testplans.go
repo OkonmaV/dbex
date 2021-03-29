@@ -20,3 +20,9 @@ func (conn *MySqlConnection) SelectTestplansAll() (*[]Testplan, error) {
 	err := conn.DB.Find(res).Error
 	return res, err
 }
+
+func (conn *MySqlConnection) SelectTestplanById(id uint) (*Testplan, error) {
+	res := &Testplan{}
+	err := conn.DB.Where("Id = ?", id).First(res).Error
+	return res, err
+}

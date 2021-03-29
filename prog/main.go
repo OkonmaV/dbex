@@ -7,7 +7,7 @@ import (
 
 func main() {
 
-	dsn := "root:root@tcp(46.160.161.50:3306)/ex?charset=utf8mb4&parseTime=True&loc=Local"
+	dsn := "root:root@tcp(localhost:3306)/ex?charset=utf8mb4&parseTime=True&loc=Local"
 	log.Println("connecting to server...")
 	conn, err := dbex.NewMySqlConnection(dsn)
 	if err != nil {

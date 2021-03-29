@@ -9,13 +9,6 @@ type MySqlConnection struct {
 	DB *gorm.DB
 }
 
-type Crud interface {
-	Create(interface{}) error
-	UpdateById(int, interface{}) error
-	Delete() error
-	Read() error
-}
-
 func NewMySqlConnection(connectionString string) (*MySqlConnection, error) {
 	db, err := gorm.Open(mysql.Open(connectionString), &gorm.Config{})
 	if err != nil {

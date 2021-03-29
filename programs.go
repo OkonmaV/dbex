@@ -20,3 +20,9 @@ func (conn *MySqlConnection) SelectProgramsAll() (*[]Program, error) {
 	err := conn.DB.Find(res).Error
 	return res, err
 }
+
+func (conn *MySqlConnection) SelectProgramById(id uint) (*Program, error) {
+	res := &Program{}
+	err := conn.DB.Where("Id = ?", id).First(res).Error
+	return res, err
+}

@@ -25,6 +25,12 @@ func (conn *MySqlConnection) SelectStatusesAll() (*[]Status, error) {
 	return res, err
 }
 
+func (conn *MySqlConnection) SelectStatusById(id uint) (*Status, error) {
+	res := &Status{}
+	err := conn.DB.Where("Id = ?", id).First(res).Error
+	return res, err
+}
+
 // func (conn *MySqlConnection) SelectStatusesByField(fieldname string) []*Status {
 // 	res := []*Status{}
 // 	conn.DB.Where(suckutils.ConcatThree()).Find(res)

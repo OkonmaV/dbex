@@ -22,3 +22,9 @@ func (conn *MySqlConnection) SelectDepartmentsAll() (*[]Department, error) {
 	err := conn.DB.Find(res).Error
 	return res, err
 }
+
+func (conn *MySqlConnection) SelectDepartmentById(id uint) (*Department, error) {
+	res := &Department{}
+	err := conn.DB.Where("Id = ?", id).First(res).Error
+	return res, err
+}

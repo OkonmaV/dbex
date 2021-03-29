@@ -23,3 +23,9 @@ func (conn *MySqlConnection) SelectTestsetsAll() (*[]Testset, error) {
 	err := conn.DB.Find(res).Error
 	return res, err
 }
+
+func (conn *MySqlConnection) SelectTestsetById(id uint) (*Testset, error) {
+	res := &Testset{}
+	err := conn.DB.Where("Id = ?", id).First(res).Error
+	return res, err
+}

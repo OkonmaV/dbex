@@ -2,25 +2,31 @@ package dbex
 
 type Testpoint struct {
 	Id             uint `gorm:"primaryKey"`
-	TestEngineerId uint `gorm:"foreignKey:FK_TestPoints_Testers_TestEngineerId"`
-	TestCaseId     uint `gorm:"foreignKey:FK_TestPoints_TestCases_TestCaseId"`
-	TestSetId      uint `gorm:"foreignKey:FK_TestPoints_TestSets_TestSetId"`
+	TestEngineerId uint `gorm:"foreignKey:FK_TestPoints_Testers_TestEngineerId;column:TestEngineerId"`
+	TestCaseId     uint `gorm:"foreignKey:FK_TestPoints_TestCases_TestCaseId;column:TestCaseId"`
+	TestSetId      uint `gorm:"foreignKey:FK_TestPoints_TestSets_TestSetId;column:TestSetId"`
 }
 
-func (conn *MySqlConnection) CreateTestpoint(data *Testpoint) {
-	conn.DB.Create(data)
+func (conn *MySqlConnection) CreateTestpoint(data *Testpoint) error {
+	return conn.DB.Create(data).Error
 }
 
-func (conn *MySqlConnection) DeleteTestpointById(id uint) {
-	conn.DB.Delete(&Testpoint{Id: id})
+func (conn *MySqlConnection) DeleteTestpointById(id uint) error {
+	return conn.DB.Delete(&Testpoint{Id: id}).Error
 }
 
-func (conn *MySqlConnection) UpdateTestpoint(data *Testpoint) {
-	conn.DB.Save(data)
+func (conn *MySqlConnection) UpdateTestpoint(data *Testpoint) error {
+	return conn.DB.Save(data).Error
 }
 
-func (conn *MySqlConnection) SelectTestpointsAll() *[]Testpoint {
+func (conn *MySqlConnection) SelectTestpointsAll() (*[]Testpoint, error) {
 	res := new([]Testpoint)
-	_ = conn.DB.Find(res)
-	return res
+	err := conn.DB.Find(res).Error
+	return res, err
+}
+
+func (conn *MySqlConnection) SelectTestpointById(id uint) (*Testpoint, error) {
+	res := &Testpoint{}
+	err := conn.DB.Where("Id = ?", id).First(res).Error
+	return res, err
 }

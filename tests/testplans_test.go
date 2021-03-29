@@ -113,3 +113,37 @@ func TestSelectTestplansAll(t *testing.T) {
 	}
 
 }
+
+func TestSelectTestPlanById(t *testing.T) {
+	dataItems := []TestDataItemStatuses{
+		{0, nil, true},
+		{1, nil, false},
+	}
+
+	conn, err := GetConf()
+	if err != nil {
+		t.Error("DB connection error: ", err)
+		return
+	}
+
+	for _, item := range dataItems {
+		foo, err := conn.SelectTestplanById(item.inputId)
+
+		if item.isBroken {
+			if err == nil {
+				t.Error("\nFAILED: expected an error, but no error catched at Select by id ", item.inputId)
+			} else {
+				t.Log("\nPASSED: expected an error, got an error at Select by id ", foo, "\nerror: ", err)
+			}
+		} else {
+			if err != nil {
+				t.Error("\nFAILED: non-expected error at Select by id ", item.inputId, "\nerror: ", err)
+			} else if foo.Id != 0 {
+				t.Log("\nPASSED: no error at Select by id ", foo)
+			} else {
+				t.Error("\nFAILED: no error, but relust is nil at Select by id ", item.inputId)
+			}
+		}
+	}
+
+}

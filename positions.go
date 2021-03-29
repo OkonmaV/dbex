@@ -23,3 +23,9 @@ func (conn *MySqlConnection) SelectPositionsAll() (*[]Position, error) {
 	err := conn.DB.Find(res).Error
 	return res, err
 }
+
+func (conn *MySqlConnection) SelectPositionById(id uint) (*Position, error) {
+	res := &Position{}
+	err := conn.DB.Where("Id = ?", id).First(res).Error
+	return res, err
+}
