@@ -18,9 +18,9 @@ func (conn *MySqlConnection) UpdatePosition(data *Position) error {
 	return conn.DB.Save(data).Error
 }
 
-func (conn *MySqlConnection) SelectPositionsAll() (*[]Position, error) {
-	res := new([]Position)
-	err := conn.DB.Find(res).Error
+func (conn *MySqlConnection) SelectPositionsAll() ([]Position, error) {
+	var res []Position
+	err := conn.DB.Find(&res).Error
 	return res, err
 }
 

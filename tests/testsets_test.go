@@ -118,11 +118,11 @@ func TestSelectTestsetsAll(t *testing.T) {
 		t.Error("FAILED: DB connection error: ", err)
 		return
 	}
-	foo, err := conn.SelectTestsetsAll()
+	foo, err := conn.SelectAllTestsets()
 
 	if err != nil {
 		t.Error("\nFAILED: non-expected error at SelectAll\nerror: ", err)
-	} else if len(*foo) == 0 {
+	} else if len(foo) == 0 {
 		t.Error("\nFAILED: returned empty slice at SelectAll")
 	} else {
 		t.Log("\nPASSED: returned at SelectAll:\n", foo)

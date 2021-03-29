@@ -2,7 +2,10 @@ package dbex_test
 
 import (
 	"dbex"
+	"errors"
 	"testing"
+
+	"gorm.io/gorm"
 )
 
 type TestDataItemDepartments struct {
@@ -14,30 +17,21 @@ type TestDataItemDepartments struct {
 func TestCreateDepartment(t *testing.T) {
 
 	dataItems := []TestDataItemDepartments{
-		{0, &dbex.Department{Id: 1, Description: "test"}, true},
-		{0, &dbex.Department{Description: "test"}, false},
-	}
-
-	conn, err := GetConf()
-	if err != nil {
-		t.Error("DB connection error: ", err)
-		return
+		{200, &dbex.Department{Id: 200, Description: "test insert 2"}, false},
+		{100, &dbex.Department{Id: 100, Description: "test insert 1"}, false},
+		{200, &dbex.Department{Id: 200, Description: "test insert 2"}, true},
 	}
 
 	for _, item := range dataItems {
-		err := conn.CreateDepartment(item.input)
+		err := DB.CreateDepartment(item.input)
 
 		if item.isBroken {
 			if err == nil {
 				t.Error("\nFAILED: expected an error, but no error catched at Inserting ", item.input)
-			} else {
-				t.Log("\nPASSED: expected an error, got an error at Inserting ", item.input, "\nerror: ", err)
 			}
 		} else {
 			if err != nil {
 				t.Error("\nFAILED: non-expected error at Inserting ", item.input, "\nerror: ", err)
-			} else {
-				t.Log("\nPASSED: no error at Inserting ", item.input)
 			}
 		}
 	}
@@ -46,104 +40,123 @@ func TestCreateDepartment(t *testing.T) {
 
 func TestDeleteDepartmentById(t *testing.T) {
 
-	conn, err := GetConf()
+	depins := &dbex.Department{Description: "desc for delete"}
+	err := DB.CreateDepartment(depins)
 	if err != nil {
-		t.Error("FAILED: DB connection error: ", err)
-		return
+		t.Error("insert error: ", err, depins)
 	}
 
 	foo := &dbex.Department{}
-	err = conn.DB.Where("Description = ?", "test").Last(foo).Error
-	if foo.Id == 0 && err == nil {
-		_ = conn.DB.Create(&dbex.Department{Description: "test"})
-		_ = conn.DB.Where("Description = ?", "test").Last(foo)
+	err = DB.DB.First(foo, depins.Id).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		t.Error("FAILED: not found record")
 	} else if err != nil {
-		t.Error("FAILED: some error : ", err)
+		t.Error("FAILED: some error : ", err, "\nfoo: ", foo)
 	}
 
-	err = conn.DeleteDepartmentById(foo.Id)
+	err = DB.DeleteDepartmentById(foo.Id)
 
 	if err != nil {
 		t.Error("\nFAILED: non-expected error at Delete by id ", foo.Id, "\nerror: ", err)
+	}
+
+	foo = &dbex.Department{}
+	err = DB.DB.First(foo, depins.Id).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		// passed
+	} else if err != nil {
+		t.Error("FAILED: some error : ", err, "\nfoo: ", foo)
 	} else {
-		t.Log("\nPASSED: no error at Delete by id ", foo.Id)
+		t.Error("FAILED: record not deleted")
 	}
 }
 
 func TestUpdateDepartment(t *testing.T) {
 
-	conn, err := GetConf()
+	depins := &dbex.Department{Description: "desc"}
+	err := DB.CreateDepartment(depins)
 	if err != nil {
-		t.Error("FAILED: DB connection error: ", err)
-		return
+		t.Error("insert error: ", err, depins)
 	}
 
 	foo := &dbex.Department{}
-	err = conn.DB.Where("Description = ?", "test").Last(foo).Error
-	if foo.Id == 0 {
-		_ = conn.DB.Create(&dbex.Department{Description: "test"})
-		_ = conn.DB.Where("Description = ?", "test").Last(foo)
+	err = DB.DB.First(foo, depins.Id).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		t.Error("FAILED: not found record")
 	} else if err != nil {
 		t.Error("FAILED: some error : ", err, "\nfoo: ", foo)
 	}
 
-	err = conn.UpdateDepartment(foo)
+	foo.Description = "new desc"
+	err = DB.UpdateDepartment(foo)
 
 	if err != nil {
 		t.Error("\nFAILED: non-expected error at Update ", foo.Id, "\nerror: ", err)
-	} else {
-		t.Log("\nPASSED: no error at Update ", foo.Id)
+	}
+
+	foo = &dbex.Department{}
+	err = DB.DB.First(foo, depins.Id).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		t.Error("FAILED: not found record")
+	} else if err != nil {
+		t.Error("FAILED: some error : ", err, "\nfoo: ", foo)
+	} else if foo.Description != "new desc" {
+		t.Error("FAILED: description do not updated")
 	}
 }
 
 func TestSelectDepartmentsAll(t *testing.T) {
-	conn, err := GetConf()
-	if err != nil {
-		t.Error("FAILED: DB connection error: ", err)
-		return
-	}
-	foo, err := conn.SelectDepartmentsAll()
 
-	if err != nil {
-		t.Error("\nFAILED: non-expected error at SelectAll\nerror: ", err)
-	} else if len(*foo) == 0 {
-		t.Error("\nFAILED: returned empty slice at SelectAll")
-	} else {
-		t.Log("\nPASSED: returned at SelectAll:\n", foo)
+	// clear table
+	if err := DB.DB.Exec("delete from departments").Error; err != nil {
+		t.Error("Clear table error:", err)
 	}
 
-}
-
-func TestSelectDepartmentById(t *testing.T) {
-	dataItems := []TestDataItemStatuses{
-		{0, nil, true},
-		{1, nil, false},
-	}
-
-	conn, err := GetConf()
-	if err != nil {
-		t.Error("DB connection error: ", err)
-		return
+	dataItems := []TestDataItemDepartments{
+		{0, &dbex.Department{Description: "test1"}, false},
+		{0, &dbex.Department{Description: "test2"}, false},
+		{0, &dbex.Department{Description: "test3"}, true},
 	}
 
 	for _, item := range dataItems {
-		foo, err := conn.SelectDepartmentById(item.inputId)
+		err := DB.CreateDepartment(item.input)
 
-		if item.isBroken {
-			if err == nil {
-				t.Error("\nFAILED: expected an error, but no error catched at Select by id ", item.inputId)
-			} else {
-				t.Log("\nPASSED: expected an error, got an error at Select by id ", foo, "\nerror: ", err)
-			}
-		} else {
-			if err != nil {
-				t.Error("\nFAILED: non-expected error at Select by id ", item.inputId, "\nerror: ", err)
-			} else if foo.Id != 0 {
-				t.Log("\nPASSED: no error at Select by id ", foo)
-			} else {
-				t.Error("\nFAILED: no error, but relust is nil at Select by id ", item.inputId)
-			}
+		if err != nil {
+			t.Error("\nFAILED: non-expected error at Inserting ", item.input, "\nerror: ", err)
 		}
 	}
 
+	foo, err := DB.SelectAllDepartments()
+
+	if err != nil {
+		t.Error("\nFAILED: non-expected error at SelectAll\nerror: ", err)
+	} else if len(foo) == 0 {
+		t.Error("\nFAILED: returned empty slice at SelectAll")
+	}
+
+	if len(foo) != len(dataItems) {
+		t.Error("\nFAILED: returned count not match")
+	}
+
+	for i, item := range foo {
+		if item.Id != dataItems[i].input.Id {
+			t.Error("\nFAILED: returned id is not match ", item.Id, dataItems[i].input.Id)
+		}
+	}
+}
+
+func TestSelectDepartmentById(t *testing.T) {
+	depins := &dbex.Department{Description: "desc"}
+	err := DB.CreateDepartment(depins)
+	if err != nil {
+		t.Error("insert error: ", err)
+	}
+
+	foo := &dbex.Department{}
+	err = DB.DB.First(foo, depins.Id).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		t.Error("FAILED: not found record")
+	} else if err != nil {
+		t.Error("FAILED: some error : ", err, "\nfoo: ", foo)
+	}
 }

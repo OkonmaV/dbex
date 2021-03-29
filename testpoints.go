@@ -2,9 +2,9 @@ package dbex
 
 type Testpoint struct {
 	Id             uint `gorm:"primaryKey"`
-	TestEngineerId uint `gorm:"foreignKey:FK_TestPoints_Testers_TestEngineerId;column:TestEngineerId"`
-	TestCaseId     uint `gorm:"foreignKey:FK_TestPoints_TestCases_TestCaseId;column:TestCaseId"`
-	TestSetId      uint `gorm:"foreignKey:FK_TestPoints_TestSets_TestSetId;column:TestSetId"`
+	TestEngineerId uint `gorm:"foreignKey:FK_TestPoints_Testers_TestEngineerId;column:testengineerid"`
+	TestCaseId     uint `gorm:"foreignKey:FK_TestPoints_TestCases_TestCaseId;column:testcaseid"`
+	TestSetId      uint `gorm:"foreignKey:FK_TestPoints_TestSets_TestSetId;column:testsetid"`
 }
 
 func (conn *MySqlConnection) CreateTestpoint(data *Testpoint) error {

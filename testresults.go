@@ -6,8 +6,8 @@ import "time"
 
 type Testresult struct {
 	Id          uint `gorm:"primaryKey"`
-	TestPointId uint `gorm:"foreignKey:FK_TestResults_TestPoints_TestPointId;column:TestPointId"`
-	StatusId    uint `gorm:"foreignKey:FK_TestResults_Statuses;column:StatusId"`
+	TestPointId uint `gorm:"foreignKey:FK_TestResults_TestPoints_TestPointId;column:testpointid"`
+	StatusId    uint `gorm:"foreignKey:FK_TestResults_Statuses;column:statusid"`
 	Start       time.Time
 	Finish      time.Time
 }
@@ -34,4 +34,15 @@ func (conn *MySqlConnection) SelectTestresultById(id uint) (*Testresult, error) 
 	res := &Testresult{}
 	err := conn.DB.Where("Id = ?", id).First(res).Error
 	return res, err
+}
+
+func (conn *MySqlConnection) GetAvgTestElapsed() (time.Duration, error) {
+	var result struct{ Avg string }
+	err := conn.DB.Table("testresults").Select("avg(finish-start)").Scan(&result).Error
+	if err != nil {
+		return 0, err
+	}
+	result.Avg = result.Avg[:2] + "h" + result.Avg[4:5] + "m" + result.Avg[6:] + "s"
+	dur, err := time.ParseDuration(result.Avg)
+	return dur, err
 }

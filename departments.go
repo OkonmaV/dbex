@@ -1,7 +1,7 @@
 package dbex
 
 type Department struct {
-	Id          uint `gorm:"primaryKey"`
+	Id          uint `gorm:"primaryKey, autoIncrement:true"`
 	Description string
 }
 
@@ -17,9 +17,9 @@ func (conn *MySqlConnection) UpdateDepartment(data *Department) error {
 	return conn.DB.Save(data).Error
 }
 
-func (conn *MySqlConnection) SelectDepartmentsAll() (*[]Department, error) {
-	res := new([]Department)
-	err := conn.DB.Find(res).Error
+func (conn *MySqlConnection) SelectAllDepartments() ([]Department, error) {
+	var res []Department
+	err := conn.DB.Find(&res).Error
 	return res, err
 }
 

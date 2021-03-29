@@ -15,9 +15,9 @@ func (conn *MySqlConnection) DeleteProgramById(id uint) error {
 func (conn *MySqlConnection) UpdateProgram(data *Program) error {
 	return conn.DB.Save(data).Error
 }
-func (conn *MySqlConnection) SelectProgramsAll() (*[]Program, error) {
-	res := new([]Program)
-	err := conn.DB.Find(res).Error
+func (conn *MySqlConnection) SelectProgramsAll() ([]Program, error) {
+	var res []Program
+	err := conn.DB.Find(&res).Error
 	return res, err
 }
 
