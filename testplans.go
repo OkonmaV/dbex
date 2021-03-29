@@ -5,18 +5,18 @@ type Testplan struct {
 	Name string
 }
 
-func (conf *Conf) CreateTestplan(data *Testplan) error {
-	return conf.Db.Create(data).Error
+func (conn *MySqlConnection) CreateTestplan(data *Testplan) error {
+	return conn.DB.Create(data).Error
 }
 
-func (conf *Conf) DeleteTestplanById(id uint) error {
-	return conf.Db.Delete(&Testplan{Id: id}).Error
+func (conn *MySqlConnection) DeleteTestplanById(id uint) error {
+	return conn.DB.Delete(&Testplan{Id: id}).Error
 }
-func (conf *Conf) UpdateTestplan(data *Testplan) error {
-	return conf.Db.Save(data).Error
+func (conn *MySqlConnection) UpdateTestplan(data *Testplan) error {
+	return conn.DB.Save(data).Error
 }
-func (conf *Conf) SelectTestplansAll() (*[]Testplan, error) {
+func (conn *MySqlConnection) SelectTestplansAll() (*[]Testplan, error) {
 	res := new([]Testplan)
-	err := conf.Db.Find(res).Error
+	err := conn.DB.Find(res).Error
 	return res, err
 }

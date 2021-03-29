@@ -5,28 +5,28 @@ type Status struct {
 	Status string
 }
 
-func (conf *Conf) CreateStatus(data *Status) error {
-	return conf.Db.Create(data).Error
+func (conn *MySqlConnection) CreateStatus(data *Status) error {
+	return conn.DB.Create(data).Error
 }
 
-func (conf *Conf) DeleteStatusById(id uint) error {
-	return conf.Db.Delete(&Status{}, id).Error
+func (conn *MySqlConnection) DeleteStatusById(id uint) error {
+	return conn.DB.Delete(&Status{}, id).Error
 }
-func (conf *Conf) UpdateStatus(data *Status) error {
-	return conf.Db.Save(data).Error
+func (conn *MySqlConnection) UpdateStatus(data *Status) error {
+	return conn.DB.Save(data).Error
 }
 
-// func (conf *Conf) UpdateStatusField(data *Status, field string, status string) {
-// 	conf.db.Model(data).Update(field, status)
+// func (conn *MySqlConnection) UpdateStatusField(data *Status, field string, status string) {
+// 	conn.DB.Model(data).Update(field, status)
 // }
-func (conf *Conf) SelectStatusesAll() (*[]Status, error) {
+func (conn *MySqlConnection) SelectStatusesAll() (*[]Status, error) {
 	res := new([]Status)
-	err := conf.Db.Find(res).Error
+	err := conn.DB.Find(res).Error
 	return res, err
 }
 
-// func (conf *Conf) SelectStatusesByField(fieldname string) []*Status {
+// func (conn *MySqlConnection) SelectStatusesByField(fieldname string) []*Status {
 // 	res := []*Status{}
-// 	conf.db.Where(suckutils.ConcatThree()).Find(res)
+// 	conn.DB.Where(suckutils.ConcatThree()).Find(res)
 // 	return res
 // }

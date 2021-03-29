@@ -6,20 +6,20 @@ type Testset struct {
 	TestPlanId uint `gorm:"foreignKey:FK_TestSets_TestPlans_TestPlanId;column:TestPlanId"`
 }
 
-func (conf *Conf) CreateTestset(data *Testset) error {
-	return conf.Db.Create(data).Error
+func (conn *MySqlConnection) CreateTestset(data *Testset) error {
+	return conn.DB.Create(data).Error
 }
 
-func (conf *Conf) DeleteTestsetById(id uint) error {
-	return conf.Db.Delete(&Testset{Id: id}).Error
+func (conn *MySqlConnection) DeleteTestsetById(id uint) error {
+	return conn.DB.Delete(&Testset{Id: id}).Error
 }
 
-func (conf *Conf) UpdateTestset(data *Testset) error {
-	return conf.Db.Save(data).Error
+func (conn *MySqlConnection) UpdateTestset(data *Testset) error {
+	return conn.DB.Save(data).Error
 }
 
-func (conf *Conf) SelectTestsetsAll() (*[]Testset, error) {
+func (conn *MySqlConnection) SelectTestsetsAll() (*[]Testset, error) {
 	res := new([]Testset)
-	err := conf.Db.Find(res).Error
+	err := conn.DB.Find(res).Error
 	return res, err
 }

@@ -6,20 +6,20 @@ type Position struct {
 	Code        string
 }
 
-func (conf *Conf) CreatePosition(data *Position) error {
-	return conf.Db.Create(data).Error
+func (conn *MySqlConnection) CreatePosition(data *Position) error {
+	return conn.DB.Create(data).Error
 }
 
-func (conf *Conf) DeletePositionById(id uint) error {
-	return conf.Db.Delete(&Position{Id: id}).Error
+func (conn *MySqlConnection) DeletePositionById(id uint) error {
+	return conn.DB.Delete(&Position{Id: id}).Error
 }
 
-func (conf *Conf) UpdatePosition(data *Position) error {
-	return conf.Db.Save(data).Error
+func (conn *MySqlConnection) UpdatePosition(data *Position) error {
+	return conn.DB.Save(data).Error
 }
 
-func (conf *Conf) SelectPositionsAll() (*[]Position, error) {
+func (conn *MySqlConnection) SelectPositionsAll() (*[]Position, error) {
 	res := new([]Position)
-	err := conf.Db.Find(res).Error
+	err := conn.DB.Find(res).Error
 	return res, err
 }

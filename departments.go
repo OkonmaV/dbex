@@ -5,20 +5,20 @@ type Department struct {
 	Description string
 }
 
-func (conf *Conf) CreateDepartment(data *Department) error {
-	return conf.Db.Create(data).Error
+func (conn *MySqlConnection) CreateDepartment(data *Department) error {
+	return conn.DB.Create(data).Error
 }
 
-func (conf *Conf) DeleteDepartmentById(id uint) error {
-	return conf.Db.Delete(&Department{Id: id}).Error
+func (conn *MySqlConnection) DeleteDepartmentById(id uint) error {
+	return conn.DB.Delete(&Department{Id: id}).Error
 }
 
-func (conf *Conf) UpdateDepartment(data *Department) error {
-	return conf.Db.Save(data).Error
+func (conn *MySqlConnection) UpdateDepartment(data *Department) error {
+	return conn.DB.Save(data).Error
 }
 
-func (conf *Conf) SelectDepartmentsAll() (*[]Department, error) {
+func (conn *MySqlConnection) SelectDepartmentsAll() (*[]Department, error) {
 	res := new([]Department)
-	err := conf.Db.Find(res).Error
+	err := conn.DB.Find(res).Error
 	return res, err
 }

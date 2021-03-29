@@ -5,18 +5,18 @@ type Program struct {
 	Name string
 }
 
-func (conf *Conf) CreateProgram(data *Program) error {
-	return conf.Db.Create(data).Error
+func (conn *MySqlConnection) CreateProgram(data *Program) error {
+	return conn.DB.Create(data).Error
 }
 
-func (conf *Conf) DeleteProgramById(id uint) error {
-	return conf.Db.Delete(&Program{Id: id}).Error
+func (conn *MySqlConnection) DeleteProgramById(id uint) error {
+	return conn.DB.Delete(&Program{Id: id}).Error
 }
-func (conf *Conf) UpdateProgram(data *Program) error {
-	return conf.Db.Save(data).Error
+func (conn *MySqlConnection) UpdateProgram(data *Program) error {
+	return conn.DB.Save(data).Error
 }
-func (conf *Conf) SelectProgramsAll() (*[]Program, error) {
+func (conn *MySqlConnection) SelectProgramsAll() (*[]Program, error) {
 	res := new([]Program)
-	err := conf.Db.Find(res).Error
+	err := conn.DB.Find(res).Error
 	return res, err
 }
