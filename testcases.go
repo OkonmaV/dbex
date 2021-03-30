@@ -1,11 +1,12 @@
 package dbex
 
 type Testcase struct {
-	Id          uint `gorm:"primaryKey"`
-	Name        string
-	Designation uint
-	Steps       string
-	ForId       uint `gorm:"foreignKey:FK_TestCases_ProgramVersions_FromId;column:ForId"`
+	Id             uint `gorm:"primaryKey"`
+	Name           string
+	Designation    uint
+	Steps          string
+	ForId          uint           `gorm:"not null; column:ForId"`
+	Programversion Programversion `gorm:"foreignKey:ForId"`
 }
 
 func (conn *MySqlConnection) CreateTestcase(data *Testcase) error {
@@ -20,14 +21,14 @@ func (conn *MySqlConnection) UpdateTestcase(data *Testcase) error {
 	return conn.DB.Save(data).Error
 }
 
-func (conn *MySqlConnection) SelectTestcasesAll() (*[]Testcase, error) {
-	res := new([]Testcase)
-	err := conn.DB.Find(res).Error
+func (conn *MySqlConnection) SelectAllTestcases() ([]Testcase, error) {
+	var res []Testcase
+	err := conn.DB.Find(&res).Error
 	return res, err
 }
 
-func (conn *MySqlConnection) SelectTestcaseById(id uint) (*Testcase, error) {
-	res := &Testcase{}
-	err := conn.DB.Where("Id = ?", id).First(res).Error
+func (conn *MySqlConnection) SelectTestcaseById(id uint) (Testcase, error) {
+	var res Testcase
+	err := conn.DB.First(&res, id).Error
 	return res, err
 }

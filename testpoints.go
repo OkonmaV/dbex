@@ -1,10 +1,13 @@
 package dbex
 
 type Testpoint struct {
-	Id             uint `gorm:"primaryKey"`
-	TestEngineerId uint `gorm:"foreignKey:FK_TestPoints_Testers_TestEngineerId;column:testengineerid"`
-	TestCaseId     uint `gorm:"foreignKey:FK_TestPoints_TestCases_TestCaseId;column:testcaseid"`
-	TestSetId      uint `gorm:"foreignKey:FK_TestPoints_TestSets_TestSetId;column:testsetid"`
+	Id             uint     `gorm:"primaryKey"`
+	TestEngineerId uint     `gorm:"column:TestEngineerId"`
+	Tester         Tester   `gorm:"foreignKey:TestEngineerId"`
+	TestCaseId     uint     `gorm:"column:TestCaseId"`
+	Testcase       Testcase `gorm:"foreignKey:TestCaseId"`
+	TestSetId      uint     `gorm:"column:TestSetId"`
+	Testset        Testset  `gorm:"foreignKey:TestSetId"`
 }
 
 func (conn *MySqlConnection) CreateTestpoint(data *Testpoint) error {
@@ -19,14 +22,14 @@ func (conn *MySqlConnection) UpdateTestpoint(data *Testpoint) error {
 	return conn.DB.Save(data).Error
 }
 
-func (conn *MySqlConnection) SelectTestpointsAll() (*[]Testpoint, error) {
-	res := new([]Testpoint)
-	err := conn.DB.Find(res).Error
+func (conn *MySqlConnection) SelectAllTestpoints() ([]Testpoint, error) {
+	var res []Testpoint
+	err := conn.DB.Find(&res).Error
 	return res, err
 }
 
-func (conn *MySqlConnection) SelectTestpointById(id uint) (*Testpoint, error) {
-	res := &Testpoint{}
-	err := conn.DB.Where("Id = ?", id).First(res).Error
+func (conn *MySqlConnection) SelectTestpointById(id uint) (Testpoint, error) {
+	var res Testpoint
+	err := conn.DB.First(&res, id).Error
 	return res, err
 }

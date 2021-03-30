@@ -15,14 +15,14 @@ func (conn *MySqlConnection) DeleteTestplanById(id uint) error {
 func (conn *MySqlConnection) UpdateTestplan(data *Testplan) error {
 	return conn.DB.Save(data).Error
 }
-func (conn *MySqlConnection) SelectTestplansAll() (*[]Testplan, error) {
-	res := new([]Testplan)
-	err := conn.DB.Find(res).Error
+func (conn *MySqlConnection) SelectAllTestplans() ([]Testplan, error) {
+	var res []Testplan
+	err := conn.DB.Find(&res).Error
 	return res, err
 }
 
-func (conn *MySqlConnection) SelectTestplanById(id uint) (*Testplan, error) {
-	res := &Testplan{}
-	err := conn.DB.Where("Id = ?", id).First(res).Error
+func (conn *MySqlConnection) SelectTestplanById(id uint) (Testplan, error) {
+	var res Testplan
+	err := conn.DB.First(&res, id).Error
 	return res, err
 }

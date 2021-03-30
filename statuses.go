@@ -19,15 +19,15 @@ func (conn *MySqlConnection) UpdateStatus(data *Status) error {
 // func (conn *MySqlConnection) UpdateStatusField(data *Status, field string, status string) {
 // 	conn.DB.Model(data).Update(field, status)
 // }
-func (conn *MySqlConnection) SelectStatusesAll() (*[]Status, error) {
-	res := new([]Status)
-	err := conn.DB.Find(res).Error
+func (conn *MySqlConnection) SelectAllStatuses() ([]Status, error) {
+	var res []Status
+	err := conn.DB.Find(&res).Error
 	return res, err
 }
 
-func (conn *MySqlConnection) SelectStatusById(id uint) (*Status, error) {
-	res := &Status{}
-	err := conn.DB.Where("Id = ?", id).First(res).Error
+func (conn *MySqlConnection) SelectStatusById(id uint) (Status, error) {
+	var res Status
+	err := conn.DB.First(&res, id).Error
 	return res, err
 }
 

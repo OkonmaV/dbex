@@ -18,14 +18,14 @@ func (conn *MySqlConnection) UpdatePosition(data *Position) error {
 	return conn.DB.Save(data).Error
 }
 
-func (conn *MySqlConnection) SelectPositionsAll() ([]Position, error) {
+func (conn *MySqlConnection) SelectAllPositions() ([]Position, error) {
 	var res []Position
 	err := conn.DB.Find(&res).Error
 	return res, err
 }
 
-func (conn *MySqlConnection) SelectPositionById(id uint) (*Position, error) {
-	res := &Position{}
-	err := conn.DB.Where("Id = ?", id).First(res).Error
+func (conn *MySqlConnection) SelectPositionById(id uint) (Position, error) {
+	var res Position
+	err := conn.DB.First(&res, id).Error
 	return res, err
 }

@@ -3,7 +3,8 @@ package dbex
 type Testset struct {
 	Id         uint `gorm:"primaryKey"`
 	Name       string
-	TestPlanId uint `gorm:"foreignKey:FK_TestSets_TestPlans_TestPlanId;column:testplanid"`
+	TestPlanId uint     `gorm:"column:TestPlanId"`
+	Testplan   Testplan `gorm:"foreignKey:TestPlanId"`
 }
 
 func (conn *MySqlConnection) CreateTestset(data *Testset) error {
@@ -24,9 +25,9 @@ func (conn *MySqlConnection) SelectAllTestsets() ([]Testset, error) {
 	return res, err
 }
 
-func (conn *MySqlConnection) SelectTestsetById(id uint) (*Testset, error) {
-	res := &Testset{}
-	err := conn.DB.Where("Id = ?", id).First(res).Error
+func (conn *MySqlConnection) SelectTestsetById(id uint) (Testset, error) {
+	var res Testset
+	err := conn.DB.First(&res, id).Error
 	return res, err
 }
 

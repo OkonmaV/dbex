@@ -5,11 +5,13 @@ import "time"
 // const format = "2006-01-02 15:04:05.00"
 
 type Testresult struct {
-	Id          uint `gorm:"primaryKey"`
-	TestPointId uint `gorm:"foreignKey:FK_TestResults_TestPoints_TestPointId;column:testpointid"`
-	StatusId    uint `gorm:"foreignKey:FK_TestResults_Statuses;column:statusid"`
-	Start       time.Time
-	Finish      time.Time
+	Id          uint      `gorm:"primaryKey"`
+	TestPointId uint      `gorm:"column:TestPointId"`
+	Testpoint   Testpoint `gorm:"foreignKey:TestPointId"`
+	StatusId    uint      `gorm:"column:StatusId"`
+	Status      Status    `gorm:"foreignKey:StatusId"`
+	Start       time.Time `gorm:"not null"`
+	Finish      time.Time `gorm:"not null"`
 }
 
 func (conn *MySqlConnection) CreateTestresult(data *Testresult) error {
@@ -24,15 +26,15 @@ func (conn *MySqlConnection) UpdateTestresult(data *Testresult) error {
 	return conn.DB.Save(data).Error
 }
 
-func (conn *MySqlConnection) SelectTestresultsAll() (*[]Testresult, error) {
-	res := new([]Testresult)
-	err := conn.DB.Find(res).Error
+func (conn *MySqlConnection) SelectAllTestresults() ([]Testresult, error) {
+	var res []Testresult
+	err := conn.DB.Find(&res).Error
 	return res, err
 }
 
-func (conn *MySqlConnection) SelectTestresultById(id uint) (*Testresult, error) {
-	res := &Testresult{}
-	err := conn.DB.Where("Id = ?", id).First(res).Error
+func (conn *MySqlConnection) SelectTestresultById(id uint) (Testresult, error) {
+	var res Testresult
+	err := conn.DB.First(&res, id).Error
 	return res, err
 }
 

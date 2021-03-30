@@ -28,18 +28,19 @@ func init() {
 }
 
 func OpenTestConnection() (*dbex.MySqlConnection, error) {
-	dsn := "host=localhost user=postgres password=postgres dbname=tests port=9920 sslmode=disable TimeZone=Asia/Yekaterinburg"
+	dsn := "root:root@tcp(localhost:3306)/tests?charset=utf8mb4&parseTime=True&loc=Local"
 	conn, err := dbex.NewMySqlConnection(dsn)
 	if err != nil {
 		return nil, err
 	}
 	return conn, nil
+
 	// return dbex.NewMySqlConnection("root:root@tcp(localhost:3306)/ex?charset=utf8mb4&parseTime=True&loc=Local")
 }
 
 func RunMigrations() {
 	var err error
-	allModels := []interface{}{&dbex.Department{}, &dbex.Position{}, &dbex.Program{}, &dbex.Status{}, &dbex.Testcase{}, &dbex.Tester{}, &dbex.Testplan{}, &dbex.Testpoint{}, &dbex.Testset{}, &dbex.Testresult{}}
+	allModels := []interface{}{&dbex.Department{}, &dbex.Position{}, &dbex.Program{}, &dbex.Programversion{}, &dbex.Status{}, &dbex.Testcase{}, &dbex.Tester{}, &dbex.Testplan{}, &dbex.Testpoint{}, &dbex.Testset{}, &dbex.Testresult{}}
 
 	if err = DB.DB.Migrator().DropTable(allModels...); err != nil {
 		log.Printf("Failed to drop table, got error %v\n", err)
@@ -47,7 +48,7 @@ func RunMigrations() {
 	}
 
 	if err := DB.DB.Migrator().AutoMigrate(allModels...); err != nil {
-		log.Printf("Failed to auto migrate, but got error %v\n", err)
+		log.Printf("Failed to auto migrate, got error %v\n", err)
 		os.Exit(1)
 	}
 

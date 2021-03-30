@@ -40,14 +40,14 @@ func TestCreateDepartment(t *testing.T) {
 
 func TestDeleteDepartmentById(t *testing.T) {
 
-	depins := &dbex.Department{Description: "desc for delete"}
-	err := DB.CreateDepartment(depins)
+	bar := &dbex.Department{Description: "test for delete"}
+	err := DB.CreateDepartment(bar)
 	if err != nil {
-		t.Error("insert error: ", err, depins)
+		t.Error("FAILED: insert error: ", err, bar)
 	}
 
 	foo := &dbex.Department{}
-	err = DB.DB.First(foo, depins.Id).Error
+	err = DB.DB.First(foo, bar.Id).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		t.Error("FAILED: not found record")
 	} else if err != nil {
@@ -61,7 +61,7 @@ func TestDeleteDepartmentById(t *testing.T) {
 	}
 
 	foo = &dbex.Department{}
-	err = DB.DB.First(foo, depins.Id).Error
+	err = DB.DB.First(foo, bar.Id).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		// passed
 	} else if err != nil {
@@ -73,21 +73,21 @@ func TestDeleteDepartmentById(t *testing.T) {
 
 func TestUpdateDepartment(t *testing.T) {
 
-	depins := &dbex.Department{Description: "desc"}
-	err := DB.CreateDepartment(depins)
+	bar := &dbex.Department{Description: "test for update"}
+	err := DB.CreateDepartment(bar)
 	if err != nil {
-		t.Error("insert error: ", err, depins)
+		t.Error("insert error: ", err, bar)
 	}
 
 	foo := &dbex.Department{}
-	err = DB.DB.First(foo, depins.Id).Error
+	err = DB.DB.First(foo, bar.Id).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		t.Error("FAILED: not found record")
 	} else if err != nil {
 		t.Error("FAILED: some error : ", err, "\nfoo: ", foo)
 	}
 
-	foo.Description = "new desc"
+	foo.Description = "updated"
 	err = DB.UpdateDepartment(foo)
 
 	if err != nil {
@@ -95,17 +95,17 @@ func TestUpdateDepartment(t *testing.T) {
 	}
 
 	foo = &dbex.Department{}
-	err = DB.DB.First(foo, depins.Id).Error
+	err = DB.DB.First(foo, bar.Id).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		t.Error("FAILED: not found record")
 	} else if err != nil {
 		t.Error("FAILED: some error : ", err, "\nfoo: ", foo)
-	} else if foo.Description != "new desc" {
+	} else if foo.Description != "updated" {
 		t.Error("FAILED: description do not updated")
 	}
 }
 
-func TestSelectDepartmentsAll(t *testing.T) {
+func TestSelectAllDepartments(t *testing.T) {
 
 	// clear table
 	if err := DB.DB.Exec("delete from departments").Error; err != nil {
@@ -115,7 +115,7 @@ func TestSelectDepartmentsAll(t *testing.T) {
 	dataItems := []TestDataItemDepartments{
 		{0, &dbex.Department{Description: "test1"}, false},
 		{0, &dbex.Department{Description: "test2"}, false},
-		{0, &dbex.Department{Description: "test3"}, true},
+		{0, &dbex.Department{Description: "test3"}, false},
 	}
 
 	for _, item := range dataItems {
@@ -146,14 +146,14 @@ func TestSelectDepartmentsAll(t *testing.T) {
 }
 
 func TestSelectDepartmentById(t *testing.T) {
-	depins := &dbex.Department{Description: "desc"}
-	err := DB.CreateDepartment(depins)
+	bar := &dbex.Department{Id: 500, Description: "test"}
+	err := DB.CreateDepartment(bar)
 	if err != nil {
-		t.Error("insert error: ", err)
+		t.Error("FAILED: insert error: ", err)
 	}
 
 	foo := &dbex.Department{}
-	err = DB.DB.First(foo, depins.Id).Error
+	err = DB.DB.First(foo, bar.Id).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		t.Error("FAILED: not found record")
 	} else if err != nil {

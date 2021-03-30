@@ -15,14 +15,14 @@ func (conn *MySqlConnection) DeleteProgramById(id uint) error {
 func (conn *MySqlConnection) UpdateProgram(data *Program) error {
 	return conn.DB.Save(data).Error
 }
-func (conn *MySqlConnection) SelectProgramsAll() ([]Program, error) {
+func (conn *MySqlConnection) SelectAllPrograms() ([]Program, error) {
 	var res []Program
 	err := conn.DB.Find(&res).Error
 	return res, err
 }
 
-func (conn *MySqlConnection) SelectProgramById(id uint) (*Program, error) {
-	res := &Program{}
-	err := conn.DB.Where("Id = ?", id).First(res).Error
+func (conn *MySqlConnection) SelectProgramById(id uint) (Program, error) {
+	var res Program
+	err := conn.DB.First(&res, id).Error
 	return res, err
 }

@@ -2,7 +2,10 @@ package dbex_test
 
 import (
 	"dbex"
+	"errors"
 	"testing"
+
+	"gorm.io/gorm"
 )
 
 type TestDataItemTestsets struct {
@@ -14,31 +17,26 @@ type TestDataItemTestsets struct {
 func TestCreateTestset(t *testing.T) {
 
 	dataItems := []TestDataItemTestsets{
-		{0, &dbex.Testset{Id: 1, Name: "test", TestPlanId: 1}, true},
-		{0, &dbex.Testset{Name: "test", TestPlanId: 1}, false},
-		{0, &dbex.Testset{Name: "test", TestPlanId: 9000000}, true},
+		{200, &dbex.Testset{Id: 200, Name: "test1", TestPlanId: 600}, false},
+		{100, &dbex.Testset{Id: 100, Name: "test2", TestPlanId: 1000}, true},
+		{200, &dbex.Testset{Id: 200, Name: "test3"}, true},
 	}
 
-	conn, err := GetConf()
+	err := DB.CreateTestplan(&dbex.Testplan{Id: 600, Name: "fk"})
 	if err != nil {
-		t.Error("DB connection error: ", err)
-		return
+		t.Error("\nFAILED: error at inserting for fk: ", err)
 	}
 
 	for _, item := range dataItems {
-		err := conn.CreateTestset(item.input)
+		err := DB.CreateTestset(item.input)
 
 		if item.isBroken {
 			if err == nil {
 				t.Error("\nFAILED: expected an error, but no error catched at Inserting ", item.input)
-			} else {
-				t.Log("\nPASSED: expected an error, got an error at Inserting ", item.input, "\nerror: ", err)
 			}
 		} else {
 			if err != nil {
 				t.Error("\nFAILED: non-expected error at Inserting ", item.input, "\nerror: ", err)
-			} else {
-				t.Log("\nPASSED: no error at Inserting ", item.input)
 			}
 		}
 	}
@@ -47,119 +45,129 @@ func TestCreateTestset(t *testing.T) {
 
 func TestDeleteTestsetById(t *testing.T) {
 
-	conn, err := GetConf()
+	bar := &dbex.Testset{Name: "test for delete"}
+	err := DB.CreateTestset(bar)
 	if err != nil {
-		t.Error("FAILED: DB connection error: ", err)
-		return
+		t.Error("FAILED: insert error: ", err, bar)
 	}
-
 	foo := &dbex.Testset{}
-	err = conn.DB.Where("Name = ?", "test").Last(foo).Error
-	if foo == nil && err == nil {
-		_ = conn.DB.Create(&dbex.Testset{Name: "test"})
-		_ = conn.DB.Where("Name = ?", "test").Last(foo)
+	err = DB.DB.First(foo, bar.Id).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		t.Error("FAILED: not found record")
 	} else if err != nil {
-		t.Error("FAILED: some error : ", err)
+		t.Error("FAILED: some error : ", err, "\nfoo: ", foo)
 	}
 
-	err = conn.DeleteTestsetById(foo.Id)
+	err = DB.DeleteTestsetById(foo.Id)
 
 	if err != nil {
 		t.Error("\nFAILED: non-expected error at Delete by id ", foo.Id, "\nerror: ", err)
+	}
+
+	foo = &dbex.Testset{}
+	err = DB.DB.First(foo, bar.Id).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		// passed
+	} else if err != nil {
+		t.Error("FAILED: some error : ", err, "\nfoo: ", foo)
 	} else {
-		t.Log("\nPASSED: no error at Delete by id ", foo.Id)
+		t.Error("FAILED: record not deleted")
 	}
 }
 
 func TestUpdateTestset(t *testing.T) {
 
-	conn, err := GetConf()
+	bar := &dbex.Testset{Name: "test for update", TestPlanId: 700}
+
+	err := DB.CreateTestplan(&dbex.Testplan{Id: 700, Name: "fk"})
 	if err != nil {
-		t.Error("FAILED: DB connection error: ", err)
-		return
+		t.Error("\nFAILED: error at inserting for fk: ", err)
 	}
 
+	err = DB.CreateTestset(bar)
+	if err != nil {
+		t.Error("FAILED: insert error: ", err, bar)
+	}
 	foo := &dbex.Testset{}
-	err = conn.DB.Where("Name = ?", "test").Last(foo).Error
-	if foo.Id == 0 {
-		_ = conn.DB.Create(&dbex.Testset{Name: "test", TestPlanId: 1})
-		_ = conn.DB.Where("Name = ?", "test").Last(foo)
+	err = DB.DB.First(foo, bar.Id).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		t.Error("FAILED: not found record")
 	} else if err != nil {
 		t.Error("FAILED: some error : ", err, "\nfoo: ", foo)
 	}
 
-	dataItems := []*TestDataItemTestsets{
-		{0, &dbex.Testset{Id: foo.Id, Name: "test", TestPlanId: 1}, false},
-		{0, &dbex.Testset{Id: foo.Id, Name: "test", TestPlanId: 0}, true},
+	foo.Name = "updated"
+	err = DB.UpdateTestset(foo)
+
+	if err != nil {
+		t.Error("\nFAILED: non-expected error at Update ", foo.Id, "\nerror: ", err)
 	}
 
-	for _, item := range dataItems {
-		err := conn.UpdateTestset(item.input)
-
-		if item.isBroken {
-			if err == nil {
-				t.Error("\nFAILED: expected an error, but no error catched at Update ", item.input)
-			} else {
-				t.Log("\nPASSED: expected an error, got an error at Update ", item.input, "\nerror: ", err)
-			}
-		} else {
-			if err != nil {
-				t.Error("\nFAILED: non-expected error at Update ", item.input, "\nerror: ", err)
-			} else {
-				t.Log("\nPASSED: no error at Update ", item.input)
-			}
-		}
+	foo = &dbex.Testset{}
+	err = DB.DB.First(foo, bar.Id).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		t.Error("FAILED: not found record")
+	} else if err != nil {
+		t.Error("FAILED: some error : ", err, "\nfoo: ", foo)
+	} else if foo.Name != "updated" {
+		t.Error("FAILED: was not updated")
 	}
 }
 
-func TestSelectTestsetsAll(t *testing.T) {
-	conn, err := GetConf()
-	if err != nil {
-		t.Error("FAILED: DB connection error: ", err)
-		return
+func TestSelectAllTestsets(t *testing.T) {
+
+	// clear table
+	if err := DB.DB.Exec("delete from testsets").Error; err != nil {
+		t.Error("Clear table error:", err)
 	}
-	foo, err := conn.SelectAllTestsets()
+
+	dataItems := []TestDataItemTestsets{
+		{0, &dbex.Testset{Name: "test1"}, false},
+		{0, &dbex.Testset{Name: "test2"}, false},
+		{0, &dbex.Testset{Name: "test3"}, false},
+	}
+
+	for _, item := range dataItems {
+		err := DB.CreateTestset(item.input)
+
+		if err != nil {
+			t.Error("\nFAILED: non-expected error at Inserting ", item.input, "\nerror: ", err)
+		}
+	}
+
+	foo, err := DB.SelectAllTestsets()
 
 	if err != nil {
 		t.Error("\nFAILED: non-expected error at SelectAll\nerror: ", err)
 	} else if len(foo) == 0 {
 		t.Error("\nFAILED: returned empty slice at SelectAll")
-	} else {
-		t.Log("\nPASSED: returned at SelectAll:\n", foo)
+	}
+
+	if len(foo) != len(dataItems) {
+		t.Error("\nFAILED: returned count not match")
+	}
+
+	for i, item := range foo {
+		if item.Id != dataItems[i].input.Id {
+			t.Error("\nFAILED: returned id is not match ", item.Id, dataItems[i].input.Id)
+		}
 	}
 
 }
 
 func TestSelectTestsetById(t *testing.T) {
-	dataItems := []TestDataItemStatuses{
-		{0, nil, true},
-		{1, nil, false},
-	}
 
-	conn, err := GetConf()
+	bar := &dbex.Testset{Id: 500, Name: "test"}
+	err := DB.CreateTestset(bar)
 	if err != nil {
-		t.Error("DB connection error: ", err)
-		return
+		t.Error("FAILED: insert error: ", err)
 	}
 
-	for _, item := range dataItems {
-		foo, err := conn.SelectTestsetById(item.inputId)
-
-		if item.isBroken {
-			if err == nil {
-				t.Error("\nFAILED: expected an error, but no error catched at Select by id ", item.inputId)
-			} else {
-				t.Log("\nPASSED: expected an error, got an error at Select by id ", foo, "\nerror: ", err)
-			}
-		} else {
-			if err != nil {
-				t.Error("\nFAILED: non-expected error at Select by id ", item.inputId, "\nerror: ", err)
-			} else if foo.Id != 0 {
-				t.Log("\nPASSED: no error at Select by id ", foo)
-			} else {
-				t.Error("\nFAILED: no error, but relust is nil at Select by id ", item.inputId)
-			}
-		}
+	foo := &dbex.Testset{}
+	err = DB.DB.First(foo, bar.Id).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		t.Error("FAILED: not found record")
+	} else if err != nil {
+		t.Error("FAILED: some error : ", err, "\nfoo: ", foo)
 	}
-
 }
