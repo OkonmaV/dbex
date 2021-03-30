@@ -8,29 +8,22 @@ import (
 	"gorm.io/gorm"
 )
 
-type TestDataItemTestsets struct {
+type TestDataItemTestplans struct {
 	inputId  uint
-	input    *dbex.Testset
+	input    *dbex.Testplan
 	isBroken bool
 }
 
-var fkTestsets dbex.Testplan = dbex.Testplan{Id: 550, Name: "fk"}
+func TestCreateTestplan(t *testing.T) {
 
-func TestCreateTestset(t *testing.T) {
-
-	dataItems := []TestDataItemTestsets{
-		{200, &dbex.Testset{Id: 200, Name: "test1", TestPlanId: 550, Testplan: fkTestsets}, false},
-		{100, &dbex.Testset{Id: 100, Name: "test2", TestPlanId: 1000}, true},
-		{200, &dbex.Testset{Id: 200, Name: "test3"}, true},
+	dataItems := []TestDataItemTestplans{
+		{200, &dbex.Testplan{Id: 200, Name: "test insert 1"}, false},
+		{100, &dbex.Testplan{Id: 100, Name: "test insert 2"}, false},
+		{200, &dbex.Testplan{Id: 200, Name: "test insert 3"}, true},
 	}
 
-	// err := DB.DB.Create(&dbex.Testplan{Id: 650, Name: "fk"}).Error
-	// if err != nil {
-	// 	t.Error("\nFAILED: error at inserting for fk: ", err)
-	// }
-
 	for _, item := range dataItems {
-		err := DB.CreateTestset(item.input)
+		err := DB.CreateTestplan(item.input)
 
 		if item.isBroken {
 			if err == nil {
@@ -45,19 +38,15 @@ func TestCreateTestset(t *testing.T) {
 
 }
 
-func TestDeleteTestsetById(t *testing.T) {
+func TestDeleteTestplanById(t *testing.T) {
 
-	// err := DB.DB.Create(&dbex.Testplan{Id: 550, Name: "fk"}).Error
-	// if err != nil {
-	// 	t.Error("\nFAILED: error at inserting for fk: ", err)
-	// }
-
-	bar := &dbex.Testset{Id: 400, Name: "test for delete", TestPlanId: 650, Testplan: fkTestsets}
-	err := DB.CreateTestset(bar)
+	bar := &dbex.Testplan{Name: "test for delete"}
+	err := DB.CreateTestplan(bar)
 	if err != nil {
 		t.Error("FAILED: insert error: ", err, bar)
 	}
-	foo := &dbex.Testset{}
+
+	foo := &dbex.Testplan{}
 	err = DB.DB.First(foo, bar.Id).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		t.Error("FAILED: not found record")
@@ -65,13 +54,13 @@ func TestDeleteTestsetById(t *testing.T) {
 		t.Error("FAILED: some error : ", err, "\nfoo: ", foo)
 	}
 
-	err = DB.DeleteTestsetById(foo.Id)
+	err = DB.DeleteTestplanById(foo.Id)
 
 	if err != nil {
 		t.Error("\nFAILED: non-expected error at Delete by id ", foo.Id, "\nerror: ", err)
 	}
 
-	foo = &dbex.Testset{}
+	foo = &dbex.Testplan{}
 	err = DB.DB.First(foo, bar.Id).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		// passed
@@ -82,20 +71,15 @@ func TestDeleteTestsetById(t *testing.T) {
 	}
 }
 
-func TestUpdateTestset(t *testing.T) {
+func TestUpdateTestplan(t *testing.T) {
 
-	bar := &dbex.Testset{Name: "test for update", TestPlanId: 750, Testplan: fkTestsets}
-
-	// err := DB.DB.Create(&dbex.Testplan{Id: 750, Name: "fk"}).Error
-	// if err != nil {
-	// 	t.Error("\nFAILED: error at inserting for fk: ", err)
-	// }
-
-	err := DB.CreateTestset(bar)
+	bar := &dbex.Testplan{Name: "test for update"}
+	err := DB.CreateTestplan(bar)
 	if err != nil {
-		t.Error("FAILED: insert error: ", err, bar)
+		t.Error("insert error: ", err, bar)
 	}
-	foo := &dbex.Testset{}
+
+	foo := &dbex.Testplan{}
 	err = DB.DB.First(foo, bar.Id).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		t.Error("FAILED: not found record")
@@ -104,45 +88,45 @@ func TestUpdateTestset(t *testing.T) {
 	}
 
 	foo.Name = "updated"
-	err = DB.UpdateTestset(foo)
+	err = DB.UpdateTestplan(foo)
 
 	if err != nil {
 		t.Error("\nFAILED: non-expected error at Update ", foo.Id, "\nerror: ", err)
 	}
 
-	foo = &dbex.Testset{}
+	foo = &dbex.Testplan{}
 	err = DB.DB.First(foo, bar.Id).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		t.Error("FAILED: not found record")
 	} else if err != nil {
 		t.Error("FAILED: some error : ", err, "\nfoo: ", foo)
 	} else if foo.Name != "updated" {
-		t.Error("FAILED: was not updated")
+		t.Error("FAILED: Name do not updated")
 	}
 }
 
-func TestSelectAllTestsets(t *testing.T) {
+func TestSelectAllTestplans(t *testing.T) {
 
 	// clear table
-	if err := DB.DB.Exec("delete from testsets").Error; err != nil {
-		t.Error("\nFAILED: Clear table error:", err)
+	if err := DB.DB.Exec("delete from testplans").Error; err != nil {
+		t.Error("Clear table error:", err)
 	}
 
-	dataItems := []TestDataItemTestsets{
-		{0, &dbex.Testset{Name: "test1", TestPlanId: 850, Testplan: fkTestsets}, false},
-		{0, &dbex.Testset{Name: "test2", TestPlanId: 850, Testplan: dbex.Testplan{Id: 850, Name: "fk"}}, false},
-		{0, &dbex.Testset{Name: "test3", TestPlanId: 850, Testplan: dbex.Testplan{Id: 850, Name: "fk"}}, false},
+	dataItems := []TestDataItemTestplans{
+		{0, &dbex.Testplan{Name: "test1"}, false},
+		{0, &dbex.Testplan{Name: "test2"}, false},
+		{0, &dbex.Testplan{Name: "test3"}, false},
 	}
 
 	for _, item := range dataItems {
-		err := DB.CreateTestset(item.input)
+		err := DB.CreateTestplan(item.input)
 
 		if err != nil {
 			t.Error("\nFAILED: non-expected error at Inserting ", item.input, "\nerror: ", err)
 		}
 	}
 
-	foo, err := DB.SelectAllTestsets()
+	foo, err := DB.SelectAllTestplans()
 
 	if err != nil {
 		t.Error("\nFAILED: non-expected error at SelectAll\nerror: ", err)
@@ -159,22 +143,24 @@ func TestSelectAllTestsets(t *testing.T) {
 			t.Error("\nFAILED: returned id is not match ", item.Id, dataItems[i].input.Id)
 		}
 	}
-
 }
 
-func TestSelectTestsetById(t *testing.T) {
-
-	bar := &dbex.Testset{Id: 500, Name: "test", TestPlanId: 850, Testplan: fkTestsets}
-	err := DB.CreateTestset(bar)
+func TestSelectTestplanById(t *testing.T) {
+	bar := &dbex.Testplan{Id: 500, Name: "test"}
+	err := DB.CreateTestplan(bar)
 	if err != nil {
 		t.Error("FAILED: insert error: ", err)
 	}
 
-	foo := &dbex.Testset{}
+	foo := &dbex.Testplan{}
 	err = DB.DB.First(foo, bar.Id).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		t.Error("FAILED: not found record")
 	} else if err != nil {
 		t.Error("FAILED: some error : ", err, "\nfoo: ", foo)
+	}
+
+	if err := DB.DB.Exec("delete from testplans").Error; err != nil {
+		t.Error("Clear table error:", err)
 	}
 }

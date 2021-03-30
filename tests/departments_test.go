@@ -17,9 +17,9 @@ type TestDataItemDepartments struct {
 func TestCreateDepartment(t *testing.T) {
 
 	dataItems := []TestDataItemDepartments{
-		{200, &dbex.Department{Id: 200, Description: "test insert 2"}, false},
-		{100, &dbex.Department{Id: 100, Description: "test insert 1"}, false},
-		{200, &dbex.Department{Id: 200, Description: "test insert 2"}, true},
+		{200, &dbex.Department{Id: 200, Description: "test insert 1"}, false},
+		{100, &dbex.Department{Id: 100, Description: "test insert 2"}, false},
+		{200, &dbex.Department{Id: 200, Description: "test insert 3"}, true},
 	}
 
 	for _, item := range dataItems {
@@ -158,5 +158,9 @@ func TestSelectDepartmentById(t *testing.T) {
 		t.Error("FAILED: not found record")
 	} else if err != nil {
 		t.Error("FAILED: some error : ", err, "\nfoo: ", foo)
+	}
+
+	if err := DB.DB.Exec("delete from departments").Error; err != nil {
+		t.Error("Clear table error:", err)
 	}
 }

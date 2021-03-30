@@ -8,20 +8,21 @@ import (
 	"gorm.io/gorm"
 )
 
-type TestDataItemTestsets struct {
+type TestDataItemProgramversions struct {
 	inputId  uint
-	input    *dbex.Testset
+	input    *dbex.Programversion
 	isBroken bool
 }
 
-var fkTestsets dbex.Testplan = dbex.Testplan{Id: 550, Name: "fk"}
+var fkProgramversions dbex.Program = dbex.Program{Id: 550, Name: "fk"}
 
-func TestCreateTestset(t *testing.T) {
+func TestCreateProgramversion(t *testing.T) {
 
-	dataItems := []TestDataItemTestsets{
-		{200, &dbex.Testset{Id: 200, Name: "test1", TestPlanId: 550, Testplan: fkTestsets}, false},
-		{100, &dbex.Testset{Id: 100, Name: "test2", TestPlanId: 1000}, true},
-		{200, &dbex.Testset{Id: 200, Name: "test3"}, true},
+	dataItems := []TestDataItemProgramversions{
+		{100, &dbex.Programversion{Id: 100, Major: 10, Minor: 10, ProgramId: 550, Program: fkProgramversions}, false},
+		{200, &dbex.Programversion{Id: 200, Major: 20, Minor: 20}, true},
+		{300, &dbex.Programversion{Id: 300, Major: 30, Minor: 30, ProgramId: 1000}, true},
+		{400, &dbex.Programversion{Id: 100, Major: 10, Minor: 10, ProgramId: 550, Program: fkProgramversions}, true},
 	}
 
 	// err := DB.DB.Create(&dbex.Testplan{Id: 650, Name: "fk"}).Error
@@ -30,7 +31,7 @@ func TestCreateTestset(t *testing.T) {
 	// }
 
 	for _, item := range dataItems {
-		err := DB.CreateTestset(item.input)
+		err := DB.CreateProgramversion(item.input)
 
 		if item.isBroken {
 			if err == nil {
@@ -45,19 +46,19 @@ func TestCreateTestset(t *testing.T) {
 
 }
 
-func TestDeleteTestsetById(t *testing.T) {
+func TestDeleteProgramversionById(t *testing.T) {
 
 	// err := DB.DB.Create(&dbex.Testplan{Id: 550, Name: "fk"}).Error
 	// if err != nil {
 	// 	t.Error("\nFAILED: error at inserting for fk: ", err)
 	// }
 
-	bar := &dbex.Testset{Id: 400, Name: "test for delete", TestPlanId: 650, Testplan: fkTestsets}
-	err := DB.CreateTestset(bar)
+	bar := &dbex.Programversion{Major: 10, Minor: 10, ProgramId: 550, Program: fkProgramversions}
+	err := DB.CreateProgramversion(bar)
 	if err != nil {
 		t.Error("FAILED: insert error: ", err, bar)
 	}
-	foo := &dbex.Testset{}
+	foo := &dbex.Programversion{}
 	err = DB.DB.First(foo, bar.Id).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		t.Error("FAILED: not found record")
@@ -65,13 +66,13 @@ func TestDeleteTestsetById(t *testing.T) {
 		t.Error("FAILED: some error : ", err, "\nfoo: ", foo)
 	}
 
-	err = DB.DeleteTestsetById(foo.Id)
+	err = DB.DeleteProgramversionById(foo.Id)
 
 	if err != nil {
 		t.Error("\nFAILED: non-expected error at Delete by id ", foo.Id, "\nerror: ", err)
 	}
 
-	foo = &dbex.Testset{}
+	foo = &dbex.Programversion{}
 	err = DB.DB.First(foo, bar.Id).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		// passed
@@ -82,20 +83,20 @@ func TestDeleteTestsetById(t *testing.T) {
 	}
 }
 
-func TestUpdateTestset(t *testing.T) {
+func TestUpdateProgramversion(t *testing.T) {
 
-	bar := &dbex.Testset{Name: "test for update", TestPlanId: 750, Testplan: fkTestsets}
+	bar := &dbex.Programversion{Major: 10, Minor: 10, ProgramId: 550, Program: fkProgramversions}
 
 	// err := DB.DB.Create(&dbex.Testplan{Id: 750, Name: "fk"}).Error
 	// if err != nil {
 	// 	t.Error("\nFAILED: error at inserting for fk: ", err)
 	// }
 
-	err := DB.CreateTestset(bar)
+	err := DB.CreateProgramversion(bar)
 	if err != nil {
 		t.Error("FAILED: insert error: ", err, bar)
 	}
-	foo := &dbex.Testset{}
+	foo := &dbex.Programversion{}
 	err = DB.DB.First(foo, bar.Id).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		t.Error("FAILED: not found record")
@@ -103,46 +104,51 @@ func TestUpdateTestset(t *testing.T) {
 		t.Error("FAILED: some error : ", err, "\nfoo: ", foo)
 	}
 
-	foo.Name = "updated"
-	err = DB.UpdateTestset(foo)
+	foo.Major = 20
+	err = DB.UpdateProgramversion(foo)
 
 	if err != nil {
 		t.Error("\nFAILED: non-expected error at Update ", foo.Id, "\nerror: ", err)
 	}
 
-	foo = &dbex.Testset{}
+	foo = &dbex.Programversion{}
 	err = DB.DB.First(foo, bar.Id).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		t.Error("FAILED: not found record")
 	} else if err != nil {
 		t.Error("FAILED: some error : ", err, "\nfoo: ", foo)
-	} else if foo.Name != "updated" {
+	} else if foo.Major != 20 {
 		t.Error("FAILED: was not updated")
 	}
 }
 
-func TestSelectAllTestsets(t *testing.T) {
+func TestSelectAllProgramversions(t *testing.T) {
 
 	// clear table
-	if err := DB.DB.Exec("delete from testsets").Error; err != nil {
-		t.Error("\nFAILED: Clear table error:", err)
+	if err := DB.DB.Exec("delete from programversions").Error; err != nil {
+		t.Error("Clear table error:", err)
 	}
 
-	dataItems := []TestDataItemTestsets{
-		{0, &dbex.Testset{Name: "test1", TestPlanId: 850, Testplan: fkTestsets}, false},
-		{0, &dbex.Testset{Name: "test2", TestPlanId: 850, Testplan: dbex.Testplan{Id: 850, Name: "fk"}}, false},
-		{0, &dbex.Testset{Name: "test3", TestPlanId: 850, Testplan: dbex.Testplan{Id: 850, Name: "fk"}}, false},
+	// err := DB.DB.Create(&dbex.Testplan{Id: 850, Name: "fk"}).Error
+	// if err != nil {
+	// 	t.Error("\nFAILED: error at inserting for fk: ", err)
+	// }
+
+	dataItems := []TestDataItemProgramversions{
+		{0, &dbex.Programversion{Major: 15, Minor: 15, ProgramId: 550, Program: fkProgramversions}, false},
+		{0, &dbex.Programversion{Major: 25, Minor: 25, ProgramId: 550, Program: fkProgramversions}, false},
+		{0, &dbex.Programversion{Major: 35, Minor: 35, ProgramId: 550, Program: fkProgramversions}, false},
 	}
 
 	for _, item := range dataItems {
-		err := DB.CreateTestset(item.input)
+		err := DB.CreateProgramversion(item.input)
 
 		if err != nil {
 			t.Error("\nFAILED: non-expected error at Inserting ", item.input, "\nerror: ", err)
 		}
 	}
 
-	foo, err := DB.SelectAllTestsets()
+	foo, err := DB.SelectAllProgramversions()
 
 	if err != nil {
 		t.Error("\nFAILED: non-expected error at SelectAll\nerror: ", err)
@@ -162,19 +168,23 @@ func TestSelectAllTestsets(t *testing.T) {
 
 }
 
-func TestSelectTestsetById(t *testing.T) {
+func TestSelectProgramversionById(t *testing.T) {
 
-	bar := &dbex.Testset{Id: 500, Name: "test", TestPlanId: 850, Testplan: fkTestsets}
-	err := DB.CreateTestset(bar)
+	bar := &dbex.Programversion{Id: 500, Major: 10, Minor: 10, ProgramId: 550, Program: fkProgramversions}
+	err := DB.CreateProgramversion(bar)
 	if err != nil {
 		t.Error("FAILED: insert error: ", err)
 	}
 
-	foo := &dbex.Testset{}
+	foo := &dbex.Programversion{}
 	err = DB.DB.First(foo, bar.Id).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		t.Error("FAILED: not found record")
 	} else if err != nil {
 		t.Error("FAILED: some error : ", err, "\nfoo: ", foo)
+	}
+
+	if err := DB.DB.Exec("delete from programversions").Error; err != nil {
+		t.Error("Clear table error:", err)
 	}
 }
