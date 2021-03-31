@@ -1,6 +1,8 @@
 package dbex
 
-import "time"
+import (
+	"time"
+)
 
 // const format = "2006-01-02 15:04:05.00"
 
@@ -39,12 +41,12 @@ func (conn *MySqlConnection) SelectTestresultById(id uint) (Testresult, error) {
 }
 
 func (conn *MySqlConnection) GetAvgTestElapsed() (time.Duration, error) {
-	var result struct{ Avg string }
-	err := conn.DB.Table("testresults").Select("avg(finish-start)").Scan(&result).Error
+	var result float64
+
+	//smt:= conn.DB.
+	err := conn.DB.Table("testresults").Select("avg(time_to_sec(timediff(finish,start)))").Scan(&result).Error //Scan(&result).Error
 	if err != nil {
 		return 0, err
 	}
-	result.Avg = result.Avg[:2] + "h" + result.Avg[4:5] + "m" + result.Avg[6:] + "s"
-	dur, err := time.ParseDuration(result.Avg)
-	return dur, err
+	return time.Duration(result), nil
 }

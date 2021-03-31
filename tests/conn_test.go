@@ -34,8 +34,6 @@ func OpenTestConnection() (*dbex.MySqlConnection, error) {
 		return nil, err
 	}
 	return conn, nil
-
-	// return dbex.NewMySqlConnection("root:root@tcp(localhost:3306)/ex?charset=utf8mb4&parseTime=True&loc=Local")
 }
 
 func RunMigrations() {

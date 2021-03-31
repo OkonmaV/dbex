@@ -24,11 +24,6 @@ func TestCreateTestset(t *testing.T) {
 		{200, &dbex.Testset{Id: 200, Name: "test3"}, true},
 	}
 
-	// err := DB.DB.Create(&dbex.Testplan{Id: 650, Name: "fk"}).Error
-	// if err != nil {
-	// 	t.Error("\nFAILED: error at inserting for fk: ", err)
-	// }
-
 	for _, item := range dataItems {
 		err := DB.CreateTestset(item.input)
 
@@ -46,11 +41,6 @@ func TestCreateTestset(t *testing.T) {
 }
 
 func TestDeleteTestsetById(t *testing.T) {
-
-	// err := DB.DB.Create(&dbex.Testplan{Id: 550, Name: "fk"}).Error
-	// if err != nil {
-	// 	t.Error("\nFAILED: error at inserting for fk: ", err)
-	// }
 
 	bar := &dbex.Testset{Id: 400, Name: "test for delete", TestPlanId: 650, Testplan: fkTestsets}
 	err := DB.CreateTestset(bar)
@@ -85,11 +75,6 @@ func TestDeleteTestsetById(t *testing.T) {
 func TestUpdateTestset(t *testing.T) {
 
 	bar := &dbex.Testset{Name: "test for update", TestPlanId: 750, Testplan: fkTestsets}
-
-	// err := DB.DB.Create(&dbex.Testplan{Id: 750, Name: "fk"}).Error
-	// if err != nil {
-	// 	t.Error("\nFAILED: error at inserting for fk: ", err)
-	// }
 
 	err := DB.CreateTestset(bar)
 	if err != nil {
